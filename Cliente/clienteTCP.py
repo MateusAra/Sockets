@@ -1,7 +1,7 @@
 
 
 from socket import *
-from functions import menu
+from functions import menu, receave_file
 
 
 HOST = 'localhost'
@@ -15,6 +15,9 @@ while True:
         message = str(input("OPÇÃO: "))
 
         if(message != None):
+            if message == "3":
+                receave_file(message, client)
+                continue
             client.send(str.encode(message))
             messageReceive = client.recv(1024)
             print(f"Resposta: {messageReceive.decode()}")
@@ -25,5 +28,3 @@ while True:
         print("Erro: Não foi possível se conectar ao servidor.")
     except TimeoutError as ex:
         print("Erro: O servidor não respondeu a tempo.")
-
-
