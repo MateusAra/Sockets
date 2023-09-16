@@ -12,7 +12,7 @@ client.connect((HOST, PORT))
 while True:
     try:
         menu()
-        message = int(input("OPÇÃO: "))
+        message = str(input("OPÇÃO: "))
 
         if(message != None):
             client.send(str.encode(message))
