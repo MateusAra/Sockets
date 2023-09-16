@@ -9,7 +9,7 @@ print(f"HOST:{HOST}, PORT:{PORT}")
 
 server = socket(AF_INET, SOCK_STREAM)
 server.bind((HOST, PORT))
-server.listen([3])
+server.listen(3)
 
 print ('Aguardando conexão de um cliente')
 
@@ -23,4 +23,4 @@ while True:
       print ('Fechando a conexão')
       conn.close()
       break
-   conn.send(data.decode())
+   conn.send(data)
