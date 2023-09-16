@@ -1,2 +1,5 @@
 def list_to_str(list: list[str]) -> str:
-    return "\n".join(list)
+    files = "\n- ".join(list)
+    files = "\n- " + files
+
+    return files
