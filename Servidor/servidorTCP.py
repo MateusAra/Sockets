@@ -1,5 +1,5 @@
 from socket import *
-from server_functions import hora, list_files, send_file
+from server_functions import hora, list_files, send_file, send_system_data
 from sys import argv
 from server_utils import list_to_str
 
@@ -29,6 +29,10 @@ while True:
    print("Recebendo dados do cliente...")
    print(f"Comando escolhido: {str_data}")
 
+   if str_data == "1":
+      print("Enviando informações:")
+      conn.send(send_system_data.encode())
+
    if str_data == "2":
       print("Enviando hora atual...")
       conn.send(hora().encode())
@@ -45,3 +49,5 @@ while True:
       server_files = list_files()
       server_files_str = list_to_str(server_files)
       conn.send(server_files_str.encode())
+
+   

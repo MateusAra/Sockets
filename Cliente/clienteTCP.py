@@ -14,10 +14,15 @@ while True:
         menu()
         message = str(input("OPÇÃO: "))
 
-        if(message != None):
+        if message != None:
+            if int(message) > 5 or int(message) <= 0:
+                raise ValueError
             if message == "3":
                 receave_file(message, client)
                 continue
+            if message == "5":
+                client.close()
+                break
             client.send(str.encode(message))
             messageReceive = client.recv(1024)
             print(f"Resposta: {messageReceive.decode()}")
