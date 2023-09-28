@@ -1,4 +1,7 @@
 
+from time import sleep
+
+
 def menu():
     print(
         """ 
@@ -14,21 +17,17 @@ def menu():
 
 def receave_file(client_name, message, conn):
     file_name = input("Nome do arquivo: ")
-    valid = file_verify(file_name, conn)
-    if (valid):
-        conn.send(client_name.encode())
-        server_command = str.encode(f"3 {file_name}")
-        conn.send(server_command)
-        with open(file_name, 'wb') as file:
-            while True:
-                data = conn.recv(10000000)
-                if b"EOF" in data:
-                    break
-                file.write(data)
+    server_command = str.encode(f"\nCliente:{client_name}\nOpção:3 {file_name}")
+    conn.send(server_command)
+    with open(file_name, 'wb') as file:
+        while True:
+            data = conn.recv(10000000)
+            if b"EOF" in data:
+                break
+            file.write(data)
 
-        print("Arquivo recebido com sucesso!")
-    else:
-        print("Arquivo não encontrado!")
+    print("Arquivo recebido com sucesso!")
+
     
 def file_verify(file_name, conn):
     option = "4"
@@ -41,6 +40,8 @@ def file_verify(file_name, conn):
 def send_messages(client, client_name):
     while True:
         try:
+            sleep(3)
+            menu()
             message = str(input("OPÇÃO: "))
 
             if message != None:
@@ -66,11 +67,9 @@ def send_messages(client, client_name):
 def receive_messages(client):
     while True:
         try:
-            menu()
             messageReceive = client.recv(1024)
             print(f"RESPOSTA:\n {messageReceive.decode()}")
         except:
             print("\n Não foi possível permanecer conectado no servidor!!")
-            print("Pressione <Enter> para continuar...")
             client.close()
             break

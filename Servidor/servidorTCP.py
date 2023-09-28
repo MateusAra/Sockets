@@ -1,5 +1,7 @@
+import re
 from socket import *
-from server_functions import hora, list_files, send_file, send_system_data
+import sys
+from server_functions import list_files, send_file, send_system_data, time_now
 from sys import argv
 from server_utils import list_to_str
 import threading
@@ -7,7 +9,7 @@ import threading
 HOST = 'localhost'
 PORT = 5000
 
-print (f'Servidor aguardando conexão de clientes\n HOST{HOST} | PORT {PORT}')
+print (f'Servidor aguardando conexão de clientes\n HOST: {HOST} | PORT: {PORT}')
 
 clients = []
 
@@ -43,33 +45,41 @@ def messages_treatement(client):
             
             print(f"\nComando recebido: {str_data}")
 
-            if str_data == "1":
-               print("Enviando informações...")
-               system_data = send_system_data()
-               broadcast(system_data.encode(), client)
+            if "3" in str_data:
+               match = re.search(r"Opção:\s*(\d+)\s+(.*)", str_data)
 
-            if str_data == "2":
-               print("Enviando hora atual...")
-               hora = hora()
-               broadcast(hora.encode(), client)
-
-            elif "3" in str_data:
-               command_args = str_data.split(" ")[1]
+               if match is not None:
+                  file_name = match.group(2)
                print("Enviando arquivo...")
                try:
                   arquivos = list_files()
                   arquivos_str = list_to_str(arquivos)
 
-                  if command_args not in arquivos_str:
+                  if file_name not in arquivos_str:
                      raise Exception("Arquivo não encontrado ou não existe")
 
-                  send_file(command_args, client, clients)
+                  send_file(file_name, client, clients)
                   print("Arquivo enviado com sucesso!")
                except Exception as ex:
                   erro = f"Erro: {ex}"
                   broadcast(erro.encode(), client)
-               
-            elif str_data == "4":
+
+            match = re.search(r"Opção:\s*(\d+)", str_data)
+
+            if match is not None:
+               option = match.group(1)
+
+            if option == "1":
+               print("Enviando informações...")
+               system_data = send_system_data()
+               broadcast(system_data.encode(), client)
+
+            elif option == "2":
+               print("Enviando hora atual...")
+               hora = time_now()
+               broadcast(hora.encode(), client)
+
+            elif option == "4":
                print("Enviando lista de arquivos...")
                server_files = list_files()
                server_files_str = list_to_str(server_files)

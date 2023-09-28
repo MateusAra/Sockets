@@ -16,10 +16,10 @@ def main():
         print("Erro: Não foi possível se conectar ao servidor.")
 
     client_name = input("Nome do Cliente: ")
-    print("\nCliente conectado!!")
+    print("\nCliente conectado!! Obtendo informações do Servidor")
 
-    thread_recv = threading.Thread(target=receive_messages, args=[client])
     thread_send = threading.Thread(target=send_messages, args=[client, client_name] )
+    thread_recv = threading.Thread(target=receive_messages, args=[client])
 
     thread_recv.start()
     thread_send.start()

@@ -3,8 +3,9 @@ from os import listdir, path
 from pathlib import Path
 import platform
 
-def hora():
+def time_now():
     return datetime.now().strftime("%H:%M:%S")
+
 def list_files():
     script_dir = Path(__file__).parent.absolute()
     script_path = path.join(script_dir, "server_files")
