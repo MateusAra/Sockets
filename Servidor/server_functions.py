@@ -10,14 +10,14 @@ def list_files():
     script_path = path.join(script_dir, "server_files")
 
     return listdir(str(script_path))
-def send_file(file_name: str, conn):
+def send_file(file_name: str, conn, clients):
     script_dir = Path(__file__).parent.absolute()
     script_path = path.join(script_dir, "server_files", file_name)
 
     with open(script_path, "rb") as file:
         for data in file.readlines():
-            conn.send(data)
-        conn.send(b"EOF")
+            broadcast_file(data, conn, clients)
+        broadcast_file(b"EOF", conn, clients)
 
 
 def send_system_data():
@@ -29,3 +29,14 @@ def send_system_data():
     pc_name = "\nNome do computador: " + platform.node()
     informacoes = system_info + processor_info + architecture_info_string + python_version + pc_name
     return informacoes
+
+
+def broadcast_file(clients, message, client):
+    for clientItem in clients:
+      if clientItem == client:
+         try:
+            clientItem.send(message)
+         except:
+            clients.remove(clientItem)
+
+
