@@ -19,12 +19,13 @@ def send_file(file_name: str, conn):
             conn.send(data)
         conn.send(b"EOF")
 
+
 def send_system_data():
     system_info = "\nSistema atual: " + platform.system()
     processor_info = "\nProcessador: " + platform.processor()
     architecture_info = platform.architecture()
     architecture_info_string = "\nArquitetura: " + " ".join(architecture_info)
     python_version = "\nPython (versão): " + platform.python_version()
-    pc_name = "\nNome da computador: " + platform.node()
+    pc_name = "\nNome do computador: " + platform.node()
     informacoes = system_info + processor_info + architecture_info_string + python_version + pc_name
     return informacoes

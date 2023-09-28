@@ -10,7 +10,7 @@ print(f"HOST:{HOST}, PORT:{PORT}")
 
 server = socket(AF_INET, SOCK_STREAM)
 server.bind((HOST, PORT))
-server.listen(3)
+server.listen(10)
 
 print ('Aguardando conexão de um cliente')
 
@@ -30,8 +30,9 @@ while True:
    print(f"Comando escolhido: {str_data}")
 
    if str_data == "1":
-      print("Enviando informações:")
-      conn.send(send_system_data.encode())
+      print("Enviando informações...")
+      system_data = send_system_data()
+      conn.send(system_data.encode())
 
    if str_data == "2":
       print("Enviando hora atual...")
@@ -40,10 +41,18 @@ while True:
       command_args = str_data.split(" ")[1]
       print("Enviando arquivo...")
       try:
+         arquivos = list_files()
+         arquivos_str = list_to_str(arquivos)
+
+         if command_args not in arquivos_str:
+            raise Exception("Arquivo não encontrado ou não existe")
+
          send_file(command_args, conn)
          print("Arquivo enviado com sucesso!")
-      except:
-         print("Erro ao enviar arquivo!")
+      except Exception as ex:
+        erro = f"Erro: {ex}"
+        conn.send(erro.encode())
+        
    elif str_data == "4":
       print("Enviando lista de arquivos...")
       server_files = list_files()
