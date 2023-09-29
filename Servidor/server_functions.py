@@ -11,15 +11,10 @@ def list_files():
     script_path = path.join(script_dir, "server_files")
 
     return listdir(str(script_path))
-def send_file(file_name: str, conn, clients):
+def send_file(file_name: str, client):
     script_dir = Path(__file__).parent.absolute()
-    script_path = path.join(script_dir, "server_files", file_name)
-
-    with open(script_path, "rb") as file:
-        for data in file.readlines():
-            broadcast_file(data, conn, clients)
-        broadcast_file(b"EOF", conn, clients)
-
+    file_path = path.join(script_dir, "server_files", file_name)
+    broadcast_file(file_path, file_name, client)
 
 def send_system_data():
     system_info = "\nSistema atual: " + platform.system()
@@ -32,12 +27,11 @@ def send_system_data():
     return informacoes
 
 
-def broadcast_file(clients, message, client):
-    for clientItem in clients:
-      if clientItem == client:
-         try:
-            clientItem.send(message)
-         except:
-            clients.remove(clientItem)
+def broadcast_file(file_path: str, file_name: str, client):
+    file_send_message = f"file_type {file_name}".encode()
+    client.send(file_send_message)
 
-
+    with open(file_path, "rb") as file:
+        for data in file.readlines():
+            client.send(data)
+        client.send(b"EOF")

@@ -15,19 +15,10 @@ def menu():
         [5] - SAIR:
         """)
 
-def receave_file(client_name, message, conn):
+def request_file(client_name, client):
     file_name = input("Nome do arquivo: ")
     server_command = str.encode(f"\nCliente:{client_name}\nOpção:3 {file_name}")
-    conn.send(server_command)
-    with open(file_name, 'wb') as file:
-        while True:
-            data = conn.recv(10000000)
-            if b"EOF" in data:
-                break
-            file.write(data)
-
-    print("Arquivo recebido com sucesso!")
-
+    client.send(server_command)
     
 def file_verify(file_name, conn):
     option = "4"
@@ -44,17 +35,20 @@ def send_messages(client, client_name):
             menu()
             message = str(input("OPÇÃO: "))
 
-            if message != None:
-                if int(message) > 5 or int(message) <= 0:
-                    raise ValueError
-                if message == "3":
-                    receave_file(client_name, message, client)
-                    continue
-                if message == "5":
-                    print("Fechando conexão com servidor")
-                    client.close()
-                    break
-                client.send(f"\nCliente:{client_name}\nOpção:{message}".encode())
+            if message == None:
+                continue
+            if int(message) > 5 or int(message) <= 0:
+                raise ValueError
+            
+            if message == "3":
+                request_file(client_name, client)
+                continue
+
+            if message == "5":
+                print("Fechando conexão com servidor")
+                client.close()
+                break
+            client.send(f"\nCliente:{client_name}\nOpção:{message}".encode())
 
         except ValueError as ex:
             print("Erro: Escolha uma opção válida!!!")
@@ -67,9 +61,32 @@ def send_messages(client, client_name):
 def receive_messages(client):
     while True:
         try:
-            messageReceive = client.recv(1024)
-            print(f"RESPOSTA:\n {messageReceive.decode()}")
-        except:
+            messageReceive = client.recv(4096)
+            message_decoded = messageReceive.decode()
+            if "file_type" in message_decoded:
+                receave_file(message_decoded, client)
+                continue
+
+            print(f"RESPOSTA:\n {message_decoded}")
+        except Exception as ex:
             print("\n Não foi possível permanecer conectado no servidor!!")
             client.close()
             break
+
+def receave_file(file_message, client):
+    splited_message = file_message.split(" ")
+    file_name = splited_message[1]
+
+    file = open(file_name, 'wb+')
+    while True:
+        data = client.recv(4096)
+        is_last_line = b"EOF" in data
+        if is_last_line:
+            data = data.replace(b"EOF", b"")
+            file.write(data)
+            break
+        file.write(data)
+    
+    file.flush()
+    file.close()
+    print("Arquivo recebido com sucesso!")
