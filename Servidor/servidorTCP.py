@@ -15,28 +15,25 @@ clients = []
 
 def main():
 
-   server = socket(AF_INET, SOCK_STREAM)
+   tcp_server = socket(AF_INET, SOCK_STREAM)
    
    try:
-      server.bind((HOST, PORT))
-      server.listen()
+      tcp_server.bind((HOST, PORT))
+      tcp_server.listen()
    except:
       return print("\n Não foi possível iniciar o servidor!\n")
    
    while True:
-      client, ender = server.accept()
+      client, ender = tcp_server.accept()
       clients.append(client)
 
       thread = threading.Thread(target=messages_treatement, args=[client])
       thread.start()
 
-
-
-
 def messages_treatement(client):
     while True:
         try:
-            message = client.recv(2048)
+            message = client.recv(4096)
             str_data = message.decode()
             if not message:
                print ('Fechando a conexão')
@@ -44,25 +41,6 @@ def messages_treatement(client):
                break
             
             print(f"\nComando recebido: {str_data}")
-
-            if "3" in str_data:
-               match = re.search(r"Opção:\s*(\d+)\s+(.*)", str_data)
-
-               if match is not None:
-                  file_name = match.group(2)
-               print("Enviando arquivo...")
-               try:
-                  arquivos = list_files()
-                  arquivos_str = list_to_str(arquivos)
-
-                  if file_name not in arquivos_str:
-                     raise Exception("Arquivo não encontrado ou não existe")
-
-                  send_file(file_name, client, clients)
-                  print("Arquivo enviado com sucesso!")
-               except Exception as ex:
-                  erro = f"Erro: {ex}"
-                  broadcast(erro.encode(), client)
 
             match = re.search(r"Opção:\s*(\d+)", str_data)
 
@@ -78,17 +56,34 @@ def messages_treatement(client):
                print("Enviando hora atual...")
                hora = time_now()
                broadcast(hora.encode(), client)
+               
+            elif option == "3":
+               match = re.search(r"Opção:\s*(\d+)\s+(.*)", str_data)
 
+               if match is not None:
+                  file_name = match.group(2)
+               print("Enviando arquivo...")
+               arquivos = list_files()
+               arquivos_str = list_to_str(arquivos)
+               if file_name not in arquivos_str:
+                  raise Exception("Arquivo não encontrado ou não existe")
+               
+               send_file(file_name, client)
+               print("Arquivo enviado com sucesso!")
+                  
             elif option == "4":
                print("Enviando lista de arquivos...")
                server_files = list_files()
                server_files_str = list_to_str(server_files)
                broadcast(server_files_str.encode(), client)
+               
             else:
                broadcast("\nComando não tratado\n".encode(), client)
             
-        except:
-            delete_client(client)
+        except Exception as ex:
+            erro = f"Erro: {ex}"
+            broadcast(erro.encode(), client)
+            #delete_client(client)
             break
 
 def broadcast(message, client):
