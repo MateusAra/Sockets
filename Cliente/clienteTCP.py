@@ -1,36 +1,27 @@
 
-
 from socket import *
-from functions import file_verify, menu, receave_file
+from functions import receive_messages, send_messages
+import threading
 
 
-HOST = '127.0.0.1'
-PORT = 5000
-client = socket(AF_INET, SOCK_STREAM)
-client.connect((HOST, PORT))
+def main():
 
-while True:
+    HOST = '127.0.0.1'
+    PORT = 5000
+    client = socket(AF_INET, SOCK_STREAM)
+    
     try:
-        menu()
-        message = str(input("OPÇÃO: "))
-
-        if message != None:
-            if int(message) > 5 or int(message) <= 0:
-                raise ValueError
-            if message == "3":
-                receave_file(message, client)
-                continue
-            if message == "5":
-                print("Fechando conexão com servidor")
-                client.close()
-                break
-            client.send(str.encode(message))
-            messageReceive = client.recv(1024)
-            print(f"RESPOSTA: {messageReceive.decode()}")
-
-    except ValueError as ex:
-        print("Erro: Escolha uma opção válida!!!")
-    except ConnectionError as ex:
+        client.connect((HOST, PORT))
+    except :
         print("Erro: Não foi possível se conectar ao servidor.")
-    except TimeoutError as ex:
-        print("Erro: O servidor não respondeu a tempo.")
+
+    client_name = input("Nome do Cliente: ")
+    print("\nCliente conectado!! Obtendo informações do Servidor")
+
+    thread_send = threading.Thread(target=send_messages, args=[client, client_name] )
+    thread_recv = threading.Thread(target=receive_messages, args=[client])
+
+    thread_recv.start()
+    thread_send.start()
+
+main()
